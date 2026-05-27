@@ -1,0 +1,46 @@
+{
+  "name": "presentai",
+  "version": "0.1.0",
+  "private": true,
+  "scripts": {
+    "dev": "npm run setup:pdfworker && next dev",
+    "build": "npm run setup:pdfworker && next build",
+    "start": "next start",
+    "lint": "next lint",
+    "typecheck": "tsc --noEmit",
+    "setup:pdfworker": "node scripts/copy-pdf-worker.mjs"
+  },
+  "dependencies": {
+    "@radix-ui/react-dialog": "^1.1.6",
+    "@radix-ui/react-label": "^2.1.2",
+    "@radix-ui/react-progress": "^1.1.2",
+    "@radix-ui/react-slot": "^1.1.2",
+    "@radix-ui/react-tabs": "^1.1.3",
+    "@supabase/ssr": "^0.6.1",
+    "@supabase/supabase-js": "^2.49.1",
+    "class-variance-authority": "^0.7.1",
+    "clsx": "^2.1.1",
+    "lucide-react": "^0.475.0",
+    "next": "15.2.0",
+    "openai": "^4.86.0",
+    "pdfjs-dist": "4.8.69",
+    "react": "^19.0.0",
+    "react-dom": "^19.0.0",
+    "react-pdf": "9.2.1",
+    "sonner": "^2.0.1",
+    "tailwind-merge": "^3.0.2",
+    "zod": "^3.24.2"
+  },
+  "devDependencies": {
+    "@tailwindcss/postcss": "^4.0.9",
+    "@types/node": "^22.13.5",
+    "@types/react": "^19.0.10",
+    "@types/react-dom": "^19.0.4",
+    "eslint": "^9.21.0",
+    "eslint-config-next": "15.2.0",
+    "postcss": "^8.5.3",
+    "tailwindcss": "^4.0.9",
+    "tw-animate-css": "^1.2.4",
+    "typescript": "^5.7.3"
+  }
+}
