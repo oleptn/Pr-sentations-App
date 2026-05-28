@@ -21,7 +21,7 @@
     "class-variance-authority": "^0.7.1",
     "clsx": "^2.1.1",
     "lucide-react": "^0.475.0",
-    "next": "15.2.0",
+    "next": "15.2.8",
     "openai": "^4.86.0",
     "pdfjs-dist": "4.8.69",
     "react": "^19.0.0",
