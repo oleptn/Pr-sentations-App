@@ -2,25 +2,35 @@ import "server-only";
 
 type TextItem = { str?: string };
 
-/**
- * Extract text from a PDF buffer, returning one string per page.
- * Uses the legacy build of pdfjs-dist which runs in Node without a DOM.
- */
 export async function extractSlideTexts(buffer: Buffer): Promise<string[]> {
-  // Dynamic import — pdfjs is ESM-only.
+  // Try pdfjs first (per-page extraction)
+  try {
+    return await extractWithPdfjs(buffer);
+  } catch {
+    // Fall back to pdf-parse if pdfjs fails
+    return await extractWithPdfParse(buffer);
+  }
+}
+
+async function extractWithPdfjs(buffer: Buffer): Promise<string[]> {
   const pdfjs = await import("pdfjs-dist/legacy/build/pdf.mjs");
-  // Disable the worker — we run in a single Node process.
+  // pdfjs 4.x: point workerSrc at the bundled worker file
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  (pdfjs as any).GlobalWorkerOptions.workerSrc = "";
+  const g = pdfjs as any;
+  if (!g.GlobalWorkerOptions.workerSrc) {
+    const { fileURLToPath } = await import("url");
+    const { resolve } = await import("path");
+    const workerPath = resolve("node_modules/pdfjs-dist/build/pdf.worker.min.mjs");
+    g.GlobalWorkerOptions.workerSrc = `file://${workerPath}`;
+  }
 
   const data = new Uint8Array(buffer);
-  const loadingTask = pdfjs.getDocument({
+  const doc = await pdfjs.getDocument({
     data,
     disableFontFace: true,
     useSystemFonts: false,
     isEvalSupported: false,
-  });
-  const doc = await loadingTask.promise;
+  }).promise;
 
   const pages: string[] = [];
   for (let i = 1; i <= doc.numPages; i++) {
@@ -35,4 +45,26 @@ export async function extractSlideTexts(buffer: Buffer): Promise<string[]> {
   }
   await doc.destroy();
   return pages;
+}
+
+async function extractWithPdfParse(buffer: Buffer): Promise<string[]> {
+  // pdf-parse doesn't natively split per-page, but we can use its pagerender callback
+  // eslint-disable-next-line @typescript-eslint/no-require-imports
+  const pdfParse = require("pdf-parse");
+  const pages: string[] = [];
+
+  await pdfParse(buffer, {
+    pagerender: async (pageData: { getTextContent: () => Promise<{ items: TextItem[] }> }) => {
+      const content = await pageData.getTextContent();
+      const text = content.items
+        .map((item) => item.str ?? "")
+        .join(" ")
+        .replace(/\s+/g, " ")
+        .trim();
+      pages.push(text);
+      return text;
+    },
+  });
+
+  return pages.length > 0 ? pages : [""];
 }
