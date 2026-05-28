@@ -5,6 +5,7 @@ import { createClient } from "@/lib/supabase/server";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { formatRelativeDate, formatSeconds } from "@/lib/utils";
+import { DeleteSessionButton } from "@/components/session/DeleteSessionButton";
 import type { Presentation, PracticeSession } from "@/types/database";
 
 export default async function PresentationPage({
@@ -93,31 +94,39 @@ export default async function PresentationPage({
 }
 
 function SessionRow({ session }: { session: PracticeSession }) {
-  const inner = (
-    <div className="flex items-center justify-between px-5 py-4 transition-colors hover:bg-accent/50">
-      <div className="flex items-center gap-4">
-        <div className="text-sm">
-          <div className="font-medium">
-            {new Date(session.started_at).toLocaleString()}
-          </div>
-          <div className="mt-0.5 text-xs text-muted-foreground">
-            {session.total_duration_seconds
-              ? `${formatSeconds(session.total_duration_seconds)} duration`
-              : "—"}
-          </div>
+  const info = (
+    <div className="flex items-center gap-4">
+      <div className="text-sm">
+        <div className="font-medium">
+          {new Date(session.started_at).toLocaleString()}
+        </div>
+        <div className="mt-0.5 text-xs text-muted-foreground">
+          {session.total_duration_seconds
+            ? `${formatSeconds(session.total_duration_seconds)} duration`
+            : "—"}
         </div>
       </div>
-      <SessionBadge status={session.status} />
     </div>
   );
+
+  const row = (
+    <div className="group flex items-center justify-between px-5 py-4 transition-colors hover:bg-accent/50">
+      {info}
+      <div className="flex items-center gap-3">
+        <SessionBadge status={session.status} />
+        <DeleteSessionButton sessionId={session.id} />
+      </div>
+    </div>
+  );
+
   if (session.status === "completed") {
     return (
       <li>
-        <Link href={`/sessions/${session.id}`}>{inner}</Link>
+        <Link href={`/sessions/${session.id}`}>{row}</Link>
       </li>
     );
   }
-  return <li>{inner}</li>;
+  return <li>{row}</li>;
 }
 
 function SessionBadge({ status }: { status: PracticeSession["status"] }) {
