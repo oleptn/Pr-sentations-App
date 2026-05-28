@@ -44,7 +44,7 @@ export function DeleteSessionButton({ sessionId }: { sessionId: string }) {
   return (
     <button
       onClick={(e) => { e.preventDefault(); setConfirming(true); }}
-      className="rounded p-1 text-muted-foreground opacity-0 transition-opacity hover:text-destructive group-hover:opacity-100"
+      className="rounded p-1 text-muted-foreground transition-colors hover:text-destructive"
       aria-label="Delete session"
     >
       <Trash2 className="size-4" />
