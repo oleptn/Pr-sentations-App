@@ -4,6 +4,7 @@ import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import { Plus, FileText, Clock } from "lucide-react";
 import { formatRelativeDate } from "@/lib/utils";
+import { DeletePresentationButton } from "@/components/presentation/DeletePresentationButton";
 import type { Presentation } from "@/types/database";
 
 export default async function DashboardPage() {
@@ -52,8 +53,11 @@ function PresentationCard({ presentation }: { presentation: Presentation }) {
     <Link href={`/presentations/${presentation.id}`}>
       <Card className="transition-colors hover:border-foreground/20">
         <CardContent className="p-5">
-          <div className="mb-3 inline-flex size-9 items-center justify-center rounded-lg bg-secondary">
-            <FileText className="size-4" />
+          <div className="mb-3 flex items-start justify-between">
+            <div className="inline-flex size-9 items-center justify-center rounded-lg bg-secondary">
+              <FileText className="size-4" />
+            </div>
+            <DeletePresentationButton presentationId={presentation.id} />
           </div>
           <div className="font-medium leading-tight">{presentation.title}</div>
           {presentation.context && (
