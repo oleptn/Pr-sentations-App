@@ -227,11 +227,11 @@ export function PracticeRoom({
       // 1. Upload audio for Whisper transcription.
       if (audioBlob && audioBlob.size > 0) {
         const fd = new FormData();
-        fd.append(
-          "audio",
-          audioBlob,
-          `session-${sessionId}.${mr?.mimeType.includes("mp4") ? "m4a" : "webm"}`,
-        );
+        const mimeType = audioBlob.type || mr?.mimeType || "audio/webm";
+        const ext = mimeType.includes("mp4") || mimeType.includes("m4a") ? "m4a"
+          : mimeType.includes("ogg") ? "ogg"
+          : "webm";
+        fd.append("audio", audioBlob, `session-${sessionId}.${ext}`);
         const r = await fetch(`/api/sessions/${sessionId}/transcribe`, {
           method: "POST",
           body: fd,

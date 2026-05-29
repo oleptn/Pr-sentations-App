@@ -6,7 +6,7 @@ export function getOpenAI() {
   if (cached) return cached;
   const apiKey = process.env.OPENAI_API_KEY;
   if (!apiKey) throw new Error("Missing OPENAI_API_KEY");
-  cached = new OpenAI({ apiKey });
+  cached = new OpenAI({ apiKey: apiKey.trim() });
   return cached;
 }
 
