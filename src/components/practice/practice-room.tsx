@@ -224,21 +224,27 @@ export function PracticeRoom({
     const totalSeconds = Math.round(elapsedFinal / 1000);
 
     try {
-      // 1. Upload audio for Whisper transcription.
+      // 1. Upload audio for Whisper transcription (best-effort — session always completes).
       if (audioBlob && audioBlob.size > 0) {
-        const fd = new FormData();
         const mimeType = audioBlob.type || mr?.mimeType || "audio/webm";
         const ext = mimeType.includes("mp4") || mimeType.includes("m4a") ? "m4a"
           : mimeType.includes("ogg") ? "ogg"
           : "webm";
+        const fd = new FormData();
         fd.append("audio", audioBlob, `session-${sessionId}.${ext}`);
-        const r = await fetch(`/api/sessions/${sessionId}/transcribe`, {
-          method: "POST",
-          body: fd,
-        });
-        if (!r.ok) {
-          const body = await r.json().catch(() => ({}));
-          throw new Error(body.error || "Transcription failed");
+        try {
+          const r = await fetch(`/api/sessions/${sessionId}/transcribe`, {
+            method: "POST",
+            body: fd,
+          });
+          if (!r.ok) {
+            const body = await r.json().catch(() => ({}));
+            console.warn("Transcription failed:", body.error);
+            toast.warning("Transcription unavailable — report will focus on slide timing.");
+          }
+        } catch (transcribeErr) {
+          console.warn("Transcription network error:", transcribeErr);
+          toast.warning("Transcription unavailable — report will focus on slide timing.");
         }
       }
 
@@ -275,8 +281,10 @@ export function PracticeRoom({
 
     function buildBlob() {
       if (audioChunksRef.current.length === 0) return null;
-      const mime = mr?.mimeType || "audio/webm";
-      return new Blob(audioChunksRef.current, { type: mime });
+      const mime = mr?.mimeType;
+      return mime
+        ? new Blob(audioChunksRef.current, { type: mime })
+        : new Blob(audioChunksRef.current);
     }
   }, [phase, slide, sessionId, startedAt, currentElapsedMs, router]);
 
@@ -442,6 +450,7 @@ function pickMimeType(): string {
     "audio/webm;codecs=opus",
     "audio/webm",
     "audio/mp4",
+    "video/mp4", // iOS Safari: audio/mp4 unsupported but video/mp4 works for audio-only
     "audio/ogg;codecs=opus",
   ];
   for (const c of candidates) {

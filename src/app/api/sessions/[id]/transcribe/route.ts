@@ -65,11 +65,16 @@ export async function POST(
   try {
     transcript = await transcribeAudio(buffer, filename);
   } catch (e) {
-    console.error("Whisper failed", e);
-    await supabase
-      .from("practice_sessions")
-      .update({ status: "failed" })
-      .eq("id", sessionId);
+    // Log full error details for debugging
+    const errMsg = e instanceof Error ? e.message : String(e);
+    const errStatus = (e as { status?: number }).status;
+    console.error(`Whisper failed [${errStatus ?? "?"}]: ${errMsg}`, {
+      filename,
+      mimeType: audio.type,
+      sizeBytes: audio.size,
+    });
+    // Don't mark as "failed" — finalize will set status to "processing"
+    // and the report will generate with timing data only.
     return NextResponse.json(
       { error: "Could not transcribe audio" },
       { status: 502 },

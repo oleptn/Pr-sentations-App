@@ -35,13 +35,6 @@ export async function POST(
     return NextResponse.json({ error: "Presentation missing" }, { status: 404 });
   }
 
-  if (!session.transcript || session.transcript.trim().length === 0) {
-    return NextResponse.json(
-      { error: "No transcript — was the microphone working?" },
-      { status: 400 },
-    );
-  }
-
   let report;
   try {
     report = await generateReport({
